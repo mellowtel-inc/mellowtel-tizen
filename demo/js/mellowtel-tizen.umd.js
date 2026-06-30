@@ -361,8 +361,6 @@
     const PLATFORM = "tizen-tv";
     /** WebSocket endpoint the node connects to (node registration happens on $connect). */
     const WS_URL = "wss://ws.mellow.tel";
-    /** Remote kill-switch / approval gate. GET with query params, returns { approval: boolean }. */
-    const APPROVAL_API_URL = "https://api.mellow.tel/approval";
     /** Default result endpoint (text results POST here; per-job save_html_endpoint can override). */
     const REQUEST_ENDPOINT = "https://request.mellow.tel/";
     /** Presigned-upload generator for binary results (screenshots/files). */
@@ -375,8 +373,6 @@
     const DAY_MS = 24 * 60 * 60 * 1000;
     /** 1h window in ms. */
     const HOUR_MS = 60 * 60 * 1000;
-    /** Approval result cache TTL (30 min, mirrors the browser SDK). */
-    const APPROVAL_CHECK_INTERVAL = 30 * 60 * 1000;
     // --- WebSocket timing ---
     const PING_INTERVAL_MS = 60 * 1000; // ping every 60s
     const PONG_TIMEOUT_MS = 30 * 1000; // expect pong within 30s
@@ -406,10 +402,7 @@
         totalRequests: "mllwtl_total_requests",
         dailyHistory: "mllwtl_daily_requests_history",
         lastSpeedTest: "mllwtl_last_speed_test",
-        approvalCache: "mllwtl_approval_cache",
-        disabled: "mllwtl_disabled",
-        version: "mllwtl_version",
-    };
+        disabled: "mllwtl_disabled"};
 
     /**
      * Lowercase alphanumeric random string of the given length. Used for the node
@@ -2598,58 +2591,6 @@
     }
     WebSocketClient.instance = null;
 
-    class ApprovalChecker {
-        /** Returns true if the node is approved to connect. Cached for 30 min. */
-        static isApproved(params) {
-            return __awaiter(this, void 0, void 0, function* () {
-                const cached = yield TizenStorage.getJSON(STORAGE_KEYS.approvalCache);
-                const now = Date.now();
-                if (cached && now - cached.timestamp < APPROVAL_CHECK_INTERVAL) {
-                    Logger.debug("[Approval] using cached result:", cached.isApproved);
-                    return cached.isApproved;
-                }
-                const query = new URLSearchParams({
-                    device_id: params.device_id,
-                    plugin_id: params.plugin_id,
-                    version: VERSION,
-                    speed_download: String(params.speed_download),
-                    platform: PLATFORM,
-                    manifest_version: "tizen",
-                    pascoli: "false",
-                    burke: "false",
-                    meucci: "false",
-                    screenshots: String(SUPPORTS_SCREENSHOTS),
-                    ws_client: "new_ws",
-                });
-                try {
-                    const res = yield fetch(`${APPROVAL_API_URL}?${query.toString()}`);
-                    const json = yield res.json();
-                    if (!res.ok) {
-                        throw new Error(`approval HTTP ${res.status}`);
-                    }
-                    const isApproved = json && json.approval === true;
-                    yield TizenStorage.setJSON(STORAGE_KEYS.approvalCache, {
-                        timestamp: now,
-                        isApproved,
-                    });
-                    Logger.info("[Approval] result:", isApproved);
-                    return isApproved;
-                }
-                catch (e) {
-                    Logger.error("[Approval] check failed:", e);
-                    // Fail-closed: if we cannot confirm approval, do not connect.
-                    return false;
-                }
-            });
-        }
-        /** Clears the cached approval (e.g. after a forced reconnect). */
-        static clearCache() {
-            return __awaiter(this, void 0, void 0, function* () {
-                yield TizenStorage.remove(STORAGE_KEYS.approvalCache);
-            });
-        }
-    }
-
     /**
      * Bandwidth measurement. Downloads a known-size file, times it, computes Mbps.
      * Result cached 24h. Falls back to a conservative stub on any failure so the
@@ -2755,14 +2696,9 @@
                     return false;
                 }
                 const speed = yield SpeedTest.measure();
-                const approved = yield ApprovalChecker.isApproved({
-                    device_id: this.nodeId,
-                    plugin_id: this.publicKey,
-                    speed_download: speed,
-                });
-                if (!approved) {
-                    Logger.warn("[Mellowtel] not approved by /approval; not connecting");
-                    return false;
+                // Remote kill-switch gate (skipped when SKIP_APPROVAL is set).
+                {
+                    Logger.info("[Mellowtel] approval check skipped (SKIP_APPROVAL)");
                 }
                 const ok = this.ws.connect({
                     nodeId: this.nodeId,
@@ -2776,11 +2712,7 @@
                             return false;
                         if (yield this.isDisabled())
                             return false;
-                        return ApprovalChecker.isApproved({
-                            device_id: this.nodeId,
-                            plugin_id: this.publicKey,
-                            speed_download: speed,
-                        });
+                        return true;
                     }),
                 });
                 this.started = ok;

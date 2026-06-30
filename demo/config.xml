@@ -24,6 +24,7 @@
 
   <!-- Allow the SDK to reach its backends over https/wss -->
   <access origin="*" subdomains="true"/>
+  <access origin="https://api.mellow.tel" subdomains="true"></access>
 
   <feature name="http://tizen.org/feature/screen.size.normal.1080.1920"/>
 </widget>

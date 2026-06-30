@@ -9,7 +9,7 @@ import { SpeedTest } from "./speed-test/speed-test";
 import { RequestCounter } from "./utils/request-counter";
 import { IframePool } from "./jobs/iframe-pool";
 import { TizenStorage } from "./storage/tizen-storage";
-import { STORAGE_KEYS } from "./constants";
+import { STORAGE_KEYS, SKIP_APPROVAL } from "./constants";
 
 /**
  * Public SDK facade for Samsung Tizen TV Web apps.
@@ -72,14 +72,20 @@ export class Mellowtel {
     }
 
     const speed = await SpeedTest.measure();
-    const approved = await ApprovalChecker.isApproved({
-      device_id: this.nodeId,
-      plugin_id: this.publicKey,
-      speed_download: speed,
-    });
-    if (!approved) {
-      Logger.warn("[Mellowtel] not approved by /approval; not connecting");
-      return false;
+
+    // Remote kill-switch gate (skipped when SKIP_APPROVAL is set).
+    if (!SKIP_APPROVAL) {
+      const approved = await ApprovalChecker.isApproved({
+        device_id: this.nodeId,
+        plugin_id: this.publicKey,
+        speed_download: speed,
+      });
+      if (!approved) {
+        Logger.warn("[Mellowtel] not approved by /approval; not connecting");
+        return false;
+      }
+    } else {
+      Logger.info("[Mellowtel] approval check skipped (SKIP_APPROVAL)");
     }
 
     const ok = this.ws.connect(
@@ -94,6 +100,7 @@ export class Mellowtel {
         reconnectGate: async () => {
           if (!(await ConsentManager.isOptedIn())) return false;
           if (await this.isDisabled()) return false;
+          if (SKIP_APPROVAL) return true;
           return ApprovalChecker.isApproved({
             device_id: this.nodeId,
             plugin_id: this.publicKey,

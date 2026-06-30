@@ -126,5 +126,23 @@
     <!-- The bundled SDK (copy of dist/mellowtel-tizen.umd.js). Exposes window.Mellowtel -->
     <script src="js/mellowtel-tizen.umd.js"></script>
     <script src="main.js"></script>
+    <!-- demo/index.html -->
+<script src="../mellowtel-tizen/dist/mellowtel-tizen.umd.js"></script>
+<script>
+  (async () => {
+    const mellowtel = new Mellowtel('mellowtel_test_extension');
+    await mellowtel.initBackground();
+    
+    // Test the SDK's public API
+    console.log('nodeId:', await mellowtel.getStats());
+    console.log('optIn status:', await mellowtel.getOptInStatus());
+    
+    // Force opt-in for testing (skip dialog)
+    await mellowtel.optIn();
+    
+    // Try to start — this will attempt WebSocket connection
+    await mellowtel.start();
+  })();
+</script>
   </body>
 </html>
