@@ -1,0 +1,54 @@
+{
+  "name": "mellowtel-tizen",
+  "version": "0.1.0",
+  "description": "Mellowtel SDK for Samsung Tizen TV Web apps — consensual bandwidth sharing for monetization.",
+  "author": "mellowtel-inc",
+  "license": "LGPL-3.0",
+  "main": "dist/mellowtel-tizen.umd.js",
+  "module": "dist/mellowtel-tizen.esm.js",
+  "types": "dist/types/index.d.ts",
+  "unpkg": "dist/mellowtel-tizen.umd.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rimraf dist && rollup -c",
+    "build:watch": "rollup -c -w",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint \"src/**/*.ts\"",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mellowtel",
+    "tizen",
+    "samsung",
+    "smart-tv",
+    "monetization",
+    "bandwidth"
+  ],
+  "dependencies": {
+    "turndown": "^7.2.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/jest": "^29.5.12",
+    "@types/turndown": "^5.0.4",
+    "@types/uuid": "^9.0.8",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "rimraf": "^5.0.5",
+    "rollup": "^4.9.6",
+    "rollup-plugin-dts": "^6.1.0",
+    "ts-jest": "^29.1.2",
+    "tslib": "^2.6.2",
+    "typescript": "^5.3.3"
+  }
+}
