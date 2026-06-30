@@ -36,12 +36,23 @@ export interface ConnectParams {
   speedDownload: number;
 }
 
+export interface ConnectOptions {
+  /**
+   * Gate evaluated before every reconnect attempt. Return false to stop the
+   * reconnect loop entirely (e.g. the integration was disabled via /approval or
+   * a disconnect_device command) — prevents a reconnect storm against a node the
+   * backend no longer wants online.
+   */
+  reconnectGate?: () => Promise<boolean>;
+}
+
 export class WebSocketClient {
   private static instance: WebSocketClient | null = null;
 
   private ws: WebSocket | null = null;
   private params: ConnectParams | null = null;
   private handler: MessageHandler | null = null;
+  private reconnectGate: (() => Promise<boolean>) | null = null;
 
   private isConnecting = false;
   private voluntaryDisconnect = false;
@@ -69,8 +80,11 @@ export class WebSocketClient {
   }
 
   /** Open the connection. Idempotent. */
-  connect(params: ConnectParams): boolean {
+  connect(params: ConnectParams, options?: ConnectOptions): boolean {
     this.params = params;
+    if (options && options.reconnectGate) {
+      this.reconnectGate = options.reconnectGate;
+    }
     if (this.ws) {
       Logger.debug("[WS] already connected/connecting");
       return true;
@@ -84,7 +98,11 @@ export class WebSocketClient {
     Logger.info("[WS] connecting:", url);
 
     try {
-      this.handler = new MessageHandler(params.nodeId, this.logOnly);
+      // A disconnect_device command from the server stops the node cleanly.
+      this.handler = new MessageHandler(params.nodeId, this.logOnly, () => {
+        Logger.warn("[WS] disconnect_device received — stopping node");
+        this.disconnect();
+      });
       this.ws = new WebSocket(url);
       this.attachListeners();
       return true;
@@ -215,10 +233,30 @@ export class WebSocketClient {
       `[WS] reconnect ${this.reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS} in ${delay}ms`
     );
     setTimeout(() => {
-      if (!this.voluntaryDisconnect && this.params && !this.ws) {
-        this.connect(this.params);
-      }
+      void this.tryReconnect();
     }, delay);
+  }
+
+  private async tryReconnect(): Promise<void> {
+    if (this.voluntaryDisconnect || !this.params || this.ws) return;
+    // Re-evaluate the gate (approval / disabled) before reconnecting so a
+    // backend-disabled node stops looping instead of hammering the server.
+    if (this.reconnectGate) {
+      let allowed = false;
+      try {
+        allowed = await this.reconnectGate();
+      } catch (e) {
+        Logger.error("[WS] reconnect gate threw; stopping:", e);
+        allowed = false;
+      }
+      if (!allowed) {
+        Logger.warn("[WS] reconnect gate denied; halting reconnect loop");
+        this.voluntaryDisconnect = true;
+        this.stopHealthCheck();
+        return;
+      }
+    }
+    this.connect(this.params);
   }
 
   private resetSocket(): void {

@@ -17,7 +17,11 @@ import { Logger } from "../utils/logger";
 export class MessageHandler {
   private executor: JobExecutor;
 
-  constructor(nodeId: string, private logOnly = false) {
+  constructor(
+    nodeId: string,
+    private logOnly = false,
+    private onDisconnectDevice?: () => void
+  ) {
     this.executor = new JobExecutor(nodeId);
   }
 
@@ -39,7 +43,14 @@ export class MessageHandler {
       return;
     }
 
-    // Control frames (heartbeat, disconnect_device, refresh_cereal) have no url.
+    // Server command to take this node offline (kill switch over the socket).
+    if (json.type_event === "disconnect_device") {
+      Logger.warn("[MessageHandler] disconnect_device command");
+      if (this.onDisconnectDevice) this.onDisconnectDevice();
+      return;
+    }
+
+    // Other control frames (heartbeat, refresh_cereal) have no url.
     if (!json.url) {
       Logger.debug("[MessageHandler] control frame:", json.type_event || "(none)");
       return;

@@ -82,11 +82,26 @@ export class Mellowtel {
       return false;
     }
 
-    const ok = this.ws.connect({
-      nodeId: this.nodeId,
-      publicKey: this.publicKey,
-      speedDownload: speed,
-    });
+    const ok = this.ws.connect(
+      {
+        nodeId: this.nodeId,
+        publicKey: this.publicKey,
+        speedDownload: speed,
+      },
+      {
+        // Re-checked before every reconnect: stop looping if the user opted out,
+        // the integration was disabled locally, or /approval now denies the node.
+        reconnectGate: async () => {
+          if (!(await ConsentManager.isOptedIn())) return false;
+          if (await this.isDisabled()) return false;
+          return ApprovalChecker.isApproved({
+            device_id: this.nodeId,
+            plugin_id: this.publicKey,
+            speed_download: speed,
+          });
+        },
+      }
+    );
     this.started = ok;
     return ok;
   }
