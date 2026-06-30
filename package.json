@@ -16,6 +16,7 @@
     "build:watch": "rollup -c -w",
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:live": "node scripts/live-connection.mjs",
     "lint": "eslint \"src/**/*.ts\"",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build"
