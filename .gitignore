@@ -3,14 +3,11 @@ dist/
 coverage/
 *.log
 .DS_Store
-*.wgt
-demo/.buildResult/
-demo/.sign/
-.tizen-cli-history
 
 # Tizen build/signing artifacts
+*.wgt
+.buildResult/
 .manifest.tmp
 author-signature.xml
 signature*.xml
-.buildResult/
-.tproject
+.tizen-cli-history

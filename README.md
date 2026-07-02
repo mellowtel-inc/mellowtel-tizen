@@ -1,185 +1,195 @@
 <div align="center"><strong>Mellowtel Tizen</strong></div>
-<div align="center">Monetize your Samsung Tizen TV apps.<br />Open-Source, Consensual, Transparent.</div>
+<div align="center">Monetize your Samsung Tizen TV app.<br />Open-Source, Consensual, Transparent.</div>
+<br />
+<div align="center">
+<a href="https://www.mellowtel.com/">Website</a>
+<span> · </span>
+<a href="https://github.com/mellowtel-inc/mellowtel-tizen">GitHub</a>
+<span> · </span>
+<a href="https://discord.gg/GC8vwpDWC9">Discord</a>
+</div>
+
+<br/>
+
+<div align="center">
+
+![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?logo=typescript&logoColor=white)
+![Tizen](https://img.shields.io/badge/Tizen-6.0%2B-%230B5FFF.svg?logo=tizen&logoColor=white)
+![Samsung TV](https://img.shields.io/badge/Samsung-TV-1428A0.svg?logo=samsung&logoColor=white)
+![License: LGPL v3](https://img.shields.io/badge/License-LGPL_v3-blue.svg)
+
+</div>
 
 ---
 
-# Introduction
+# Introduction ℹ️
 
-`mellowtel-tizen` lets Samsung Tizen TV app developers earn revenue by letting **consenting** users
-share a small slice of their unused internet bandwidth. Trusted partners use that bandwidth to fetch
-publicly-available web data, and you get a share of the revenue.
+With Mellowtel's open-source library, your users can decide if they want to support you by sharing a
+fraction of their unused internet bandwidth. Trusted partners — from startups to non-profits — access
+the internet to retrieve publicly available data, and you get paid for it.
 
-It is the Tizen port of the [Mellowtel](https://www.mellowtel.com/) SDK family
-(`mellowtel-js` for browser extensions, `mellowtel-electron` for desktop). It speaks the **same
-backend wire protocol** as those SDKs, so a Tizen TV becomes a first-class node in the same network.
+**Mellowtel Tizen** brings that model to **Samsung Tizen TV web apps**. It's the Tizen sibling of
+[`mellowtel-js`](https://github.com/mellowtel-inc/mellowtel-js) (browser extensions),
+[`mellowtel-electron`](https://github.com/mellowtel-inc/mellowtel-electron) (desktop apps), and
+[`mellowtel-windows`](https://github.com/mellowtel-inc/mellowtel-windows) (.NET) — and speaks the same
+backend protocol, so a TV becomes a first-class node in the same network.
 
-- **Opt-out by default.** Users are never enrolled without an explicit choice.
-- **No personal data.** Only public pages requested by the network are fetched; never the user's data.
-- **Resource-friendly.** Speed-gated, daily/hourly rate-limited, and capped to ≤2 hidden iframes to
+# Key Features 🎯
+
+- **Easy to use** — add it to your TV app with a `<script>` tag (or npm) and a few lines of code.
+- **Open-source** — every line is auditable.
+- **Consensual & opt-out by default** — users are opted out until they explicitly opt in, and can opt
+  out anytime.
+- **Non-intrusive & private** — no personal data is collected; only public pages requested by the
+  network are fetched. It runs invisibly (background `fetch` / hidden off-screen iframe — no tabs, no
+  UI) and only while your app is in the foreground.
+- **Resource-friendly** — speed-gated, daily/hourly rate-limited, and capped to ≤2 hidden iframes to
   respect TV memory.
-- **Tiny integration.** A few lines in your app entry point.
 
-> ⚠️ **v1 scope:** no screenshots (the node advertises `screenshots=false` so the matchmaker won't
-> route screenshot jobs to it). See [Limitations](#limitations).
+> **v1 scope:** no screenshots (the node advertises `screenshots=false`, so the matchmaker won't route
+> screenshot jobs to it).
 
----
+# Getting started 🚀
 
-## How it works (30 seconds)
+You need a **publishable key** from Mellowtel. Then pick one of two install methods — most Tizen TV
+apps are plain HTML/JS, so **the script tag is the fastest.**
 
-```
- Mellowtel backend  ──ws job──▶  your Tizen app (opted-in)  ──fetch──▶  public web page
-        ▲                                  │
-        └────────── result POST ───────────┘   → you earn revenue
-```
+## Install — Option 1: script tag (no build tools)
 
-1. Your app embeds the SDK with your publishable key.
-2. The user opts in via a TV-remote-friendly consent dialog.
-3. The SDK opens one WebSocket to `wss://ws.mellow.tel` (this registers the TV as a node).
-4. Jobs arrive; the SDK fetches the page, extracts HTML/Markdown, and POSTs the result back.
-5. Rendering uses **fetch + DOMParser** (static pages) or a **same-origin `srcdoc` iframe**
-   (JS-rendered pages). No Chrome-extension APIs, no native code.
-
-A full architecture breakdown lives in the workspace guide
-`SDK-ARCHITECTURE-AND-TIZEN-PORTING-GUIDE.md`.
-
----
-
-## Installation — pick the easiest for you
-
-Most Tizen TV apps are plain HTML/JS (no bundler), so **Option 1 is usually the fastest.**
-
-### Option 1 — CDN `<script>` (zero install, nothing to build)
-Add one line to your `index.html`. jsDelivr serves the prebuilt file straight from GitHub:
+Add the SDK from the CDN (jsDelivr serves it straight from this repo):
 
 ```html
 <script src="https://cdn.jsdelivr.net/gh/mellowtel-inc/mellowtel-tizen@main/browser/mellowtel-tizen.umd.js"></script>
 ```
 
-> Prefer to bundle it locally (recommended for production so the app has no external dependency at
-> runtime)? Download that same file into your app and reference it locally:
-> ```html
-> <script src="js/mellowtel-tizen.umd.js"></script>
-> ```
-> The ready-to-use file lives in the repo at [`browser/mellowtel-tizen.umd.js`](./browser/mellowtel-tizen.umd.js).
+For production, prefer **bundling it locally** so your app has no runtime dependency on a CDN —
+download [`browser/mellowtel-tizen.umd.js`](./browser/mellowtel-tizen.umd.js) into your app and
+reference it:
 
-### Option 2 — one-command setup script
-From your app's root directory:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/mellowtel-inc/mellowtel-tizen/main/scripts/setup.sh | bash
+```html
+<script src="js/mellowtel-tizen.umd.js"></script>
 ```
-It fetches, builds, and drops `js/mellowtel-tizen.umd.js` into your app.
 
-### Option 3 — npm (for bundler-based projects)
+Either way, a global `Mellowtel` becomes available.
+
+## Install — Option 2: npm
+
 ```bash
 npm install github:mellowtel-inc/mellowtel-tizen
 ```
+
+The package builds itself on install (`prepare` script), so `dist/` is ready automatically.
+
 ```js
 import Mellowtel from "mellowtel-tizen";
 ```
-The package builds itself on install (`prepare` script), so `dist/` is ready automatically.
 
----
+If your TV app has **no bundler**, install the package and copy the prebuilt file into your app:
 
-Whichever option you pick, your app's `config.xml` **must** declare the internet privilege:
+```bash
+npm install github:mellowtel-inc/mellowtel-tizen
+cp node_modules/mellowtel-tizen/browser/mellowtel-tizen.umd.js js/
+```
+
+## Declare the required privilege
+
+The SDK makes cross-origin requests and a WebSocket connection, so your app's `config.xml` **must**
+include:
 
 ```xml
 <tizen:privilege name="http://tizen.org/privilege/internet"/>
 ```
 
-See [INTEGRATION.md](./INTEGRATION.md) for the complete, step-by-step guide.
-
----
-
-## Quick start
+# Quickstart
 
 ```js
-import Mellowtel from "mellowtel-tizen";
-// or, with the UMD <script>: const Mellowtel = window.Mellowtel;
+// with the <script> tag:  var Mellowtel = window.Mellowtel;
+// with a bundler:         import Mellowtel from "mellowtel-tizen";
 
-const mellowtel = new Mellowtel("YOUR_PUBLIC_KEY");
+var mellowtel = new Mellowtel("YOUR_PUBLIC_KEY", { logLevel: "debug" }); // logs on while testing
 
-async function bootstrap() {
-  // Resolve identity + config. No network, no prompt. Auto-starts if already opted in.
-  await mellowtel.initBackground();
-
-  // Prompt once (no-op if the user already decided). OFF by default.
-  const optedIn = await mellowtel.showConsentDialog({
-    incentive: "Support this app by sharing unused bandwidth. No personal data is ever collected.",
+mellowtel.initBackground()            // load identity + config (no network). auto-starts if opted in
+  .then(function () {
+    return mellowtel.showConsentDialog();   // TV-remote-navigable modal; opt-out by default
+  })
+  .then(function (optedIn) {
+    if (optedIn) return mellowtel.start();  // connect + start sharing
   });
-
-  if (optedIn) {
-    await mellowtel.start(); // gates → /approval → connect → receive jobs
-  }
-}
-
-bootstrap();
 ```
 
-Let users change their mind later (e.g. from a Settings screen):
+Prefer your own consent UI? Skip `showConsentDialog()` and call `mellowtel.optIn()` /
+`mellowtel.optOut()` from your settings screen, then `mellowtel.start()`.
 
-```js
-await mellowtel.optOut(); // disconnects, stays remembered
-await mellowtel.optIn();  // reconnects
-const stats = await mellowtel.getStats(); // { total, daily, dailyHistory }
+With `logLevel: "debug"`, watch the Web Inspector console for `[WS] connection established` — that
+means the SDK connected and your app is a live node.
+
+# API
+
+| Method | Description |
+|---|---|
+| `new Mellowtel(publicKey, options?)` | `options`: `{ disableLogs?: boolean; logLevel?: "debug"\|"info"\|"warn"\|"error"\|"silent" }`. Logs off by default. |
+| `initBackground()` → `Promise<void>` | Load + persist node identity and key. No network. Auto-starts if the user already opted in. |
+| `showConsentDialog(options?)` → `Promise<boolean>` | Show the TV consent modal once; persists the choice. Returns the opt-in result. |
+| `start()` / `stop()` → `Promise` | Connect (gated on opt-in) / disconnect. |
+| `optIn()` / `optOut()` → `Promise<void>` | Set consent from your own UI. |
+| `getOptInStatus()` → `Promise<boolean \| undefined>` | `undefined` = not decided yet. |
+| `getNodeId()` → `string` | Stable `mllwtl_<key>_<rand>` node id. |
+| `getStats()` → `Promise<{ total, daily, dailyHistory }>` | Contribution stats. |
+
+# Building & running on a Samsung TV
+
+Tizen apps must be **signed** to install:
+
+| Target | Certificate |
+|---|---|
+| **TV emulator** | A standard **Tizen** certificate (Certificate Manager default) works. |
+| **Real Samsung TV** | A **Samsung** certificate (Samsung account) with the **TV's DUID** registered. The generic Tizen certificate will not install on a retail TV. |
+
+Build/run with Tizen Studio or the VS Code Tizen extension. CLI example:
+
+```bash
+tizen package -t wgt -s <your-cert-profile> -- .
+tizen install -n "<YourApp>.wgt" -s <serial>   # serial from `sdb devices`
+tizen run -p <your-app-id> -s <serial>
 ```
 
----
+# How it works & what leaves the device
 
-## API reference
+While your app is running and the user is opted in, the SDK connects to `wss://ws.mellow.tel`,
+receives jobs to fetch **public** web pages, does so via a background `fetch` or a **hidden off-screen
+iframe** (never a tab or visible UI), converts the result to Markdown, and uploads it.
 
-| Method | Returns | Description |
-|---|---|---|
-| `new Mellowtel(publicKey, options?)` | — | `options`: `{ disableLogs?: boolean; logLevel?: 'debug'\|'info'\|'warn'\|'error'\|'silent' }`. Logs off by default. |
-| `initBackground()` | `Promise<void>` | Resolve + persist node identity and key. No network. Auto-starts if previously opted in. |
-| `showConsentDialog(options?)` | `Promise<boolean>` | Show the TV consent modal once; persists the choice. Returns the opt-in result. No-op if already decided. |
-| `start()` | `Promise<boolean>` | Opt-in gate → speed test → `/approval` kill-switch → connect. Returns whether it started. |
-| `stop()` | `Promise<void>` | Disconnect and tear down iframes. Keeps opt-in state. |
-| `optIn()` | `Promise<void>` | Mark opted-in and start. |
-| `optOut()` | `Promise<void>` | Mark opted-out and stop. |
-| `getOptInStatus()` | `Promise<boolean \| undefined>` | `undefined` = not decided yet. |
-| `getNodeId()` | `string` | The stable `mllwtl_<key>_<rand>` node id. |
-| `getStats()` | `Promise<Stats>` | `{ total, daily, dailyHistory }`. |
+- **To the server:** an anonymous node id, SDK version, platform, measured speed, capability flags.
+- **In results:** the fetched **public page's** HTML/Markdown for the requested URL. Never the user's
+  browsing data, cookies, or identity.
 
----
+# Limitations (v1)
 
-## Configuration
+- **No screenshots** — advertised as `screenshots=false`.
+- **No header rewriting** — Tizen has no `declarativeNetRequest`, so JS-rendered pages are handled by
+  fetching the HTML and running it in a same-origin `srcdoc` iframe rather than framing third-party
+  origins directly.
+- **Foreground execution** — if Tizen suspends your app in the background, the connection pauses and
+  resumes when the app is active again.
 
-Defaults live in `src/constants.ts`. Notable values (confirm with the Mellowtel backend team before
-production):
-
-| Constant | Default | Notes |
-|---|---|---|
-| `PLATFORM` | `tizen-tv` | Advertised to the matchmaker. |
-| `MAX_DAILY_RATE` | `15000` | Daily job cap (matches Electron). |
-| `MAX_HOURLY_RATE` | `937` | `dailyRate / 24 * 1.5` burst headroom. |
-| `IFRAME_POOL_MAX` | `2` | TV memory constraint. |
-| `SUPPORTS_SCREENSHOTS` | `false` | v1 capability flag. |
-
----
-
-## Limitations
-
-- **No screenshots in v1.** The node advertises `screenshots=false`.
-- **No header rewriting.** Tizen has no `declarativeNetRequest`, so we cannot strip
-  `X-Frame-Options`/CSP. JS-rendered pages are handled by fetching the HTML ourselves and running it
-  in a same-origin `srcdoc` iframe (Option C) rather than framing third-party origins directly.
-- **Background execution depends on the TV.** If the host app is suspended in the background, the
-  socket closes. The SDK contributes while the app is foregrounded (or while a permitted background
-  category keeps it alive). Validate on real firmware — see INTEGRATION.md.
-
----
-
-## Development
+# Development
 
 ```bash
 npm install
-npm run build      # UMD + ESM + .d.ts into dist/
+npm run build      # UMD + ESM + .d.ts into dist/, plus browser/ (CDN file)
 npm test           # Jest (jsdom)
 npm run typecheck
 npm run lint
 ```
 
-## License
+> When you change the SDK source, re-run `npm run build` and commit the refreshed
+> `browser/mellowtel-tizen.umd.js` (that's the file the CDN serves).
 
-LGPL-3.0
+# Support
+
+Questions? Reach us on [Discord](https://discord.gg/GC8vwpDWC9). Ask the Mellowtel team for your
+publishable key.
+
+# License 📜
+
+GNU Lesser General Public License v3.0 (LGPL-3.0).

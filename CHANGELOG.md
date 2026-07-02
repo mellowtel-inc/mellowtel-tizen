@@ -32,8 +32,8 @@ Tizen Web Runtime.
 - **Build**: Rollup UMD + ESM + rolled-up `.d.ts`; deps (turndown, uuid) inlined.
 - **Tests**: 41 Jest unit tests across storage, identity, consent, rate-limiter, data-request,
   html-processor, approval, request-counter, message-handler.
-- **Docs**: README, INTEGRATION guide, this changelog.
-- **Demo**: a runnable Tizen TV Web app under `demo/`.
+- **Docs**: comprehensive README (script + npm install) and this changelog.
+- **Distribution**: CDN `<script>` (jsDelivr), and `npm install github:mellowtel-inc/mellowtel-tizen` (self-builds via `prepare`).
 
 ### Wire protocol
 - Matches the live Mellowtel Electron/browser SDKs: `device_id`, `recordID`, `/approval` GET params,
