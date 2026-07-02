@@ -28,12 +28,6 @@ With Mellowtel's open-source library, your users can decide if they want to supp
 fraction of their unused internet bandwidth. Trusted partners — from startups to non-profits — access
 the internet to retrieve publicly available data, and you get paid for it.
 
-**Mellowtel Tizen** brings that model to **Samsung Tizen TV web apps**. It's the Tizen sibling of
-[`mellowtel-js`](https://github.com/mellowtel-inc/mellowtel-js) (browser extensions),
-[`mellowtel-electron`](https://github.com/mellowtel-inc/mellowtel-electron) (desktop apps), and
-[`mellowtel-windows`](https://github.com/mellowtel-inc/mellowtel-windows) (.NET) — and speaks the same
-backend protocol, so a TV becomes a first-class node in the same network.
-
 # Key Features 🎯
 
 - **Easy to use** — add it to your TV app with a `<script>` tag (or npm) and a few lines of code.
@@ -45,9 +39,6 @@ backend protocol, so a TV becomes a first-class node in the same network.
   UI) and only while your app is in the foreground.
 - **Resource-friendly** — speed-gated, daily/hourly rate-limited, and capped to ≤2 hidden iframes to
   respect TV memory.
-
-> **v1 scope:** no screenshots (the node advertises `screenshots=false`, so the matchmaker won't route
-> screenshot jobs to it).
 
 # Getting started 🚀
 
