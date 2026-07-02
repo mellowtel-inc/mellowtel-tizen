@@ -7,3 +7,10 @@ coverage/
 demo/.buildResult/
 demo/.sign/
 .tizen-cli-history
+
+# Tizen build/signing artifacts
+.manifest.tmp
+author-signature.xml
+signature*.xml
+.buildResult/
+.tproject

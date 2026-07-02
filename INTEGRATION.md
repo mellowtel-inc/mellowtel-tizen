@@ -138,11 +138,27 @@ const stats = await mellowtel.getStats(); // { total, daily, dailyHistory }
 
 ### With the Tizen CLI
 ```bash
-tizen build-web
-tizen package -t wgt -s <your-cert-profile> -- .buildResult
-tizen install -n <YourApp>.wgt -t <emulator-or-device>
-tizen run -p <your-app-id> -t <emulator-or-device>
+# -s is the device SERIAL (from `sdb devices`), e.g. emulator-26101.
+tizen package -t wgt -s <your-cert-profile> -- .
+tizen install -n "<YourApp>.wgt" -s <serial>
+tizen run -p <your-app-id> -s <serial>
 ```
+
+### Certificates (emulator vs real Samsung TV)
+
+Tizen apps must be **signed** to install. What you need depends on the target:
+
+| Target | Certificate needed |
+|---|---|
+| **TV emulator** | A standard **Tizen** certificate profile (author + Tizen public distributor) — the default from Certificate Manager works. |
+| **Real Samsung TV** | A **Samsung** certificate (author + distributor) created via Certificate Manager with a Samsung account, **and the TV's DUID** (Device Unique ID) registered in the distributor certificate. The generic Tizen certificate will **not** install on a retail TV. |
+
+To deploy to a physical TV: enable **Developer Mode** on the TV, note its **DUID**, create a Samsung
+certificate including that DUID, set it active, then `package`/`install`/`run` with `-s <tv-serial>`
+(connect the TV first via `sdb connect <tv-ip>`).
+
+If a teammate already ships Samsung TV apps, the simplest path is to let them build with **their**
+certificate profile — no key sharing needed.
 
 ---
 
