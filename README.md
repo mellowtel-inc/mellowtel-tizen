@@ -44,20 +44,44 @@ A full architecture breakdown lives in the workspace guide
 
 ---
 
-## Installation
+## Installation — pick the easiest for you
 
-```bash
-npm install mellowtel-tizen
-```
+Most Tizen TV apps are plain HTML/JS (no bundler), so **Option 1 is usually the fastest.**
 
-Or drop the UMD bundle into your app and load it with a `<script>` tag (exposes a global
-`Mellowtel`):
+### Option 1 — CDN `<script>` (zero install, nothing to build)
+Add one line to your `index.html`. jsDelivr serves the prebuilt file straight from GitHub:
 
 ```html
-<script src="mellowtel-tizen.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/mellowtel-inc/mellowtel-tizen@main/browser/mellowtel-tizen.umd.js"></script>
 ```
 
-Your app's `config.xml` **must** declare the internet privilege:
+> Prefer to bundle it locally (recommended for production so the app has no external dependency at
+> runtime)? Download that same file into your app and reference it locally:
+> ```html
+> <script src="js/mellowtel-tizen.umd.js"></script>
+> ```
+> The ready-to-use file lives in the repo at [`browser/mellowtel-tizen.umd.js`](./browser/mellowtel-tizen.umd.js).
+
+### Option 2 — one-command setup script
+From your app's root directory:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/mellowtel-inc/mellowtel-tizen/main/scripts/setup.sh | bash
+```
+It fetches, builds, and drops `js/mellowtel-tizen.umd.js` into your app.
+
+### Option 3 — npm (for bundler-based projects)
+```bash
+npm install github:mellowtel-inc/mellowtel-tizen
+```
+```js
+import Mellowtel from "mellowtel-tizen";
+```
+The package builds itself on install (`prepare` script), so `dist/` is ready automatically.
+
+---
+
+Whichever option you pick, your app's `config.xml` **must** declare the internet privilege:
 
 ```xml
 <tizen:privilege name="http://tizen.org/privilege/internet"/>

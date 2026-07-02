@@ -9,16 +9,19 @@
   "types": "dist/types/index.d.ts",
   "unpkg": "dist/mellowtel-tizen.umd.js",
   "files": [
-    "dist"
+    "dist",
+    "browser"
   ],
   "scripts": {
-    "build": "rimraf dist && rollup -c",
+    "build": "rimraf dist && rollup -c && npm run copy:browser",
+    "copy:browser": "node -e \"const fs=require('fs');fs.mkdirSync('browser',{recursive:true});fs.copyFileSync('dist/mellowtel-tizen.umd.js','browser/mellowtel-tizen.umd.js')\"",
     "build:watch": "rollup -c -w",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:live": "node scripts/live-connection.mjs",
     "lint": "eslint \"src/**/*.ts\"",
     "typecheck": "tsc --noEmit",
+    "prepare": "npm run build",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
